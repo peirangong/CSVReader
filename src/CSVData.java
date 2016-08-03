@@ -1,17 +1,23 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
 
 public class CSVData {
-    private List<List<Double>> rawData;
-    private int row;
-    private int col;
+    public List<List<Double>> rawData;
+    public int row;
+    public int col;
 
     public CSVData(List<List<Double>> data) {
         rawData = data;
         row = data.size();
         col = data.get(0).size();
+    }
+
+    @Override
+    public String toString() {
+        return rawData.toString();
     }
 
     /* Returns the min value of the given column */
@@ -123,6 +129,47 @@ public class CSVData {
             }
         }
         return list;
+    }
+
+
+    public CSVData joins(int col1, CSVData data2, int col2, boolean isInner) {
+        List<List<Double>> joinedData = new ArrayList<List<Double>>();
+
+        HashMap<Double, List<Integer>> map = new HashMap<>();
+        for (int i = 0; i < this.row; i++) {
+            double cur = rawData.get(i).get(col1);
+            if (!map.containsKey(cur)) {
+                List<Integer> list = new ArrayList<Integer>();
+                map.put(cur, list);
+            }
+            map.get(cur).add(i);
+        }
+
+        for (int i = 0; i < data2.row; i++) {
+            double cur = data2.rawData.get(i).get(col2);
+            if (map.containsKey(cur)) {
+                List<Integer> list = map.get(cur);
+                for (int j = 0; j < list.size(); j++) {
+                    int idx = list.get(j);
+                    List<Double> line = new ArrayList<Double>();
+                    line.addAll(this.rawData.get(idx));
+                    line.addAll(data2.rawData.get(idx));
+                    joinedData.add(line);
+                }
+            }
+        }
+
+        CSVData joinedCSV = new CSVData(joinedData);
+        return joinedCSV;
+    }
+
+    class ListNode {
+        int val;
+        ListNode next;
+        public ListNode(int v) {
+            val = v;
+            next = null;
+        }
     }
 
     private int partition(double[] data, int lo, int hi) {
