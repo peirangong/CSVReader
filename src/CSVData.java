@@ -14,9 +14,17 @@ public class CSVData {
         row = data.size();
     }
 
+    public CSVData() {
+        rawData = null;
+        row = 0;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        if (rawData == null || rawData.size() == 0) {
+            return "Data is empty";
+        }
         for (int i = 0; i < row; i++) {
             sb.append(rawData.get(i).toString());
             sb.append("\n");
@@ -24,8 +32,38 @@ public class CSVData {
         return sb.toString();
     }
 
+    /* Return the input columns. Will skip columns that are out of range */
+    public List<List<Double>> getCols(int[] cols) {
+        List<List<Double>> data = new ArrayList<List<Double>>();
+        for (int i = 0; i < this.row; i++) {
+            List<Double> line = new ArrayList<Double>();
+            for(int j=0;j<cols.length;j++) {
+                if (cols[j] < this.rawData.get(i).size()) {
+                    line.add(this.rawData.get(i).get(cols[j]));
+                }
+            }
+            if (line.size() > 0) {
+                data.add(line);
+            }
+        }
+        return data;
+    }
+
+    public List<Double> getStats(int col) {
+        List<Double> stats = new ArrayList<Double>();
+        if (rawData == null || rawData.get(0).size() <= col) {
+            return stats;
+        }
+        stats.add(this.findMin(col));
+        stats.add(this.findMax(col));
+        stats.add(this.findMedian(col));
+        stats.add(this.findMean(col));
+
+        return stats;
+    }
+
     /* Returns the min value of the given column */
-    public double findMin(int c) {
+    private double findMin(int c) {
         double min = Double.MAX_VALUE;
         for(int i=0;i<row;i++) {
             min = Math.min(min, rawData.get(i).get(c));
@@ -34,7 +72,7 @@ public class CSVData {
     }
 
     /* Returns the max value of the given column */
-    public double findMax(int c) {
+    private double findMax(int c) {
         double max = Double.MIN_VALUE;
         for(int i=0;i<row;i++) {
             max = Math.max(max, rawData.get(i).get(c));
@@ -43,7 +81,7 @@ public class CSVData {
     }
 
     /* Returns the mean value of the given column */
-    public double findMean(int c) {
+    private double findMean(int c) {
         double mean = 0;
         for(int i=0;i<row;i++) {
             // Calculating the sum and then divide by number of rows could result overflow if the sum is too big
@@ -54,7 +92,7 @@ public class CSVData {
 
     /* Returns the median value of the given column */
     // TODO: documentation
-    public double findMedian(int c) {
+    private double findMedian(int c) {
         double[] data = new double[row];
         double median = 0;
         for (int i = 0; i < data.length; i++) {
@@ -84,36 +122,43 @@ public class CSVData {
     }
 
     /* Add column c1 and column c2 and return the result */
-    public List<Double> add(int c1, int c2) {
-        List<Double> list = new ArrayList<Double>();
+    public CSVData add(int c1, int c2) {
+        List<List<Double>> data = new ArrayList<List<Double>>();
         for (int i = 0; i < row; i++) {
+            List<Double> list = new ArrayList<Double>();
             list.add(rawData.get(i).get(c1) + rawData.get(i).get(c2));
+            data.add(list);
         }
-        return list;
+        return new CSVData(data);
     }
 
     /* Subtract column c1 from column c2 and return the result */
-    public List<Double> sub(int c1, int c2) {
-        List<Double> list = new ArrayList<Double>();
+    public CSVData sub(int c1, int c2) {
+        List<List<Double>> data = new ArrayList<List<Double>>();
         for (int i = 0; i < row; i++) {
+            List<Double> list = new ArrayList<Double>();
             list.add(rawData.get(i).get(c1) - rawData.get(i).get(c2));
+            data.add(list);
         }
-        return list;
+        return new CSVData(data);
     }
 
     /* Multiply column c1 and column c2 and return the result */
-    public List<Double> mul(int c1, int c2) {
-        List<Double> list = new ArrayList<Double>();
+    public CSVData mul(int c1, int c2) {
+        List<List<Double>> data = new ArrayList<List<Double>>();
         for (int i = 0; i < row; i++) {
+            List<Double> list = new ArrayList<Double>();
             list.add(rawData.get(i).get(c1) * rawData.get(i).get(c2));
+            data.add(list);
         }
-        return list;
+        return new CSVData(data);
     }
 
     /* Divide column c1 from column c2 and return the result */
-    public List<Double> div(int c1, int c2) {
-        List<Double> list = new ArrayList<Double>();
+    public CSVData div(int c1, int c2) {
+        List<List<Double>> data = new ArrayList<List<Double>>();
         for (int i = 0; i < row; i++) {
+            List<Double> list = new ArrayList<Double>();
             double dividend = rawData.get(i).get(c1);
             double divisor = rawData.get(i).get(c2);
 
@@ -131,8 +176,9 @@ public class CSVData {
             } else {
                 list.add(dividend / divisor);
             }
+            data.add(list);
         }
-        return list;
+        return new CSVData(data);
     }
 
 
