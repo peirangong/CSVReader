@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -7,17 +8,20 @@ import java.util.Random;
 public class CSVData {
     public List<List<Double>> rawData;
     public int row;
-    public int col;
 
     public CSVData(List<List<Double>> data) {
         rawData = data;
         row = data.size();
-        col = data.get(0).size();
     }
 
     @Override
     public String toString() {
-        return rawData.toString();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < row; i++) {
+            sb.append(rawData.get(i).toString());
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     /* Returns the min value of the given column */
@@ -132,14 +136,20 @@ public class CSVData {
     }
 
 
-    public CSVData joins(int col1, CSVData data2, int col2, boolean isInner) {
+    public static CSVData joins(CSVData data1, int col1, CSVData data2,
+            int col2, boolean isOuter) {
         List<List<Double>> joinedData = new ArrayList<List<Double>>();
 
         // Maps col1's value from the first dataset to a list of integers of row
         // indices
         HashMap<Double, List<Integer>> map = new HashMap<>();
-        for (int i = 0; i < this.row; i++) {
-            double val = rawData.get(i).get(col1);
+
+        // Hash set contains the common value from col1 of the first dataset and
+        // col22 of the second dataset
+        HashSet<Double> set = new HashSet<>();
+
+        for (int i = 0; i < data1.row; i++) {
+            double val = data1.rawData.get(i).get(col1);
             if (!map.containsKey(val)) {
                 List<Integer> list = new ArrayList<Integer>();
                 map.put(val, list);
@@ -150,6 +160,7 @@ public class CSVData {
         for (int i = 0; i < data2.row; i++) {
             double val = data2.rawData.get(i).get(col2);
             if (map.containsKey(val)) {
+                set.add(val);
                 List<Integer> list = map.get(val);
                 for (int j = 0; j < list.size(); j++) {
                     int idx = list.get(j);
@@ -159,7 +170,7 @@ public class CSVData {
                     line.add(val);
 
                     // Then add the remaining value from the first dataset
-                    addAllExcept(line, this.rawData.get(idx), col1);
+                    addAllExcept(line, data1.rawData.get(idx), col1);
 
                     // Finally add the remaining value from the second dataset
                     addAllExcept(line, data2.rawData.get(i), col2);
@@ -169,17 +180,32 @@ public class CSVData {
             }
         }
 
+        if (isOuter) {
+            // Add the unique rows from the first dataset
+            for (int i = 0; i < data1.row; i++) {
+                double val = data1.rawData.get(i).get(col1);
+                if (!set.contains(val)) {
+                    List<Double> line = new ArrayList<Double>();
+                    line.addAll(data1.rawData.get(i));
+                    line.add(null);
+                    joinedData.add(line);
+                }
+            }
+
+            // Add the unique rows from the second dataset
+            for (int i = 0; i < data2.row; i++) {
+                double val = data2.rawData.get(i).get(col2);
+                if (!set.contains(val)) {
+                    List<Double> line = new ArrayList<Double>();
+                    line.add(null);
+                    line.addAll(data2.rawData.get(i));
+                    joinedData.add(line);
+                }
+            }
+        }
+
         CSVData joinedCSV = new CSVData(joinedData);
         return joinedCSV;
-    }
-
-    class ListNode {
-        int val;
-        ListNode next;
-        public ListNode(int v) {
-            val = v;
-            next = null;
-        }
     }
 
     private int partition(double[] data, int lo, int hi) {

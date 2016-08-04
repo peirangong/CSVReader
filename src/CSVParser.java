@@ -18,12 +18,12 @@ public class CSVParser {
 
     static double[][] testData2 = { { 1.0, 2.8, 2.6, 2.7 },
             { 2.0, 3.4, 3.2, 3.1 }, { 3.0, 4.2, 4.6, 4.1 },
-            { 1.0, 9.2, 9.6, 9.1 } };
+            { 1.0, 9.2, 9.6, 9.1 }, { 5.0, 3.1, 3.6, 3.9 } };
 
     static double[][] testData3 = { { 1.0, 2 }, { 2.0, 3 }, { 3.0, 4 },
             { 4.0, 5 } };
 
-    public static List<List<Double>> readCSV(String fileName) {
+    public static CSVData readCSV(String fileName) {
         List<List<Double>> data = new ArrayList<List<Double>>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(fileName));
@@ -50,52 +50,32 @@ public class CSVParser {
             data = null;
         }
 
-        return data;
+        return new CSVData(data);
 
     }
 
     public static void main(String[] args) {
-        List<List<Double>> list1 = new ArrayList<List<Double>>();
-        List<List<Double>> list2 = new ArrayList<List<Double>>();
-
-        for (int i = 0; i < testData2.length; i++) {
-            List<Double> subList = new ArrayList<Double>();
-            for (int j = 0; j < testData2[i].length; j++) {
-                subList.add(testData2[i][j]);
-            }
-            list1.add(subList);
-        }
-
-        for (int i = 0; i < testData3.length; i++) {
-            List<Double> subList = new ArrayList<Double>();
-            for (int j = 0; j < testData3[i].length; j++) {
-                subList.add(testData3[i][j]);
-            }
-            list2.add(subList);
-        }
 
         long time = System.nanoTime();
 
-        // list1 = readCSV("Book1.csv");
-        if (list1 != null) {
-            CSVData data1 = new CSVData(list1);
-            CSVData data2 = new CSVData(list2);
-            System.out.println(data1.findMax(0));
-            System.out.println(data1.findMin(0));
-            System.out.println(data1.findMean(0));
-            System.out.println(data1.findMedian(0));
+        CSVData data1 = readCSV("book1.csv");
+        CSVData data2 = readCSV("book2.csv");
 
-            System.out.println((System.nanoTime() - time) / 1000000 + " ms");
+        System.out.println(data1.findMax(0));
+        System.out.println(data1.findMin(0));
+        System.out.println(data1.findMean(0));
+        System.out.println(data1.findMedian(0));
 
-            List<Double> ret = data1.div(0, 1);
-            for (int i = 0; i < ret.size(); i++) {
-                System.out.println(ret.get(i));
-            }
 
-            CSVData data3 = data1.joins(0, data2, 0, true);
-            System.out.println(data3.toString());
+        List<Double> ret = data1.div(0, 1);
+        for (int i = 0; i < ret.size(); i++) {
+            System.out.println(ret.get(i));
         }
 
+        CSVData data3 = CSVData.joins(data1, 2, data2, 1, true);
+        System.out.println(data3.toString());
+        System.out.println((System.nanoTime() - time) / 1000000 + " ms");
     }
+
 
 }
