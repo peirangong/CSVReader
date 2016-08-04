@@ -135,25 +135,35 @@ public class CSVData {
     public CSVData joins(int col1, CSVData data2, int col2, boolean isInner) {
         List<List<Double>> joinedData = new ArrayList<List<Double>>();
 
+        // Maps col1's value from the first dataset to a list of integers of row
+        // indices
         HashMap<Double, List<Integer>> map = new HashMap<>();
         for (int i = 0; i < this.row; i++) {
-            double cur = rawData.get(i).get(col1);
-            if (!map.containsKey(cur)) {
+            double val = rawData.get(i).get(col1);
+            if (!map.containsKey(val)) {
                 List<Integer> list = new ArrayList<Integer>();
-                map.put(cur, list);
+                map.put(val, list);
             }
-            map.get(cur).add(i);
+            map.get(val).add(i);
         }
 
         for (int i = 0; i < data2.row; i++) {
-            double cur = data2.rawData.get(i).get(col2);
-            if (map.containsKey(cur)) {
-                List<Integer> list = map.get(cur);
+            double val = data2.rawData.get(i).get(col2);
+            if (map.containsKey(val)) {
+                List<Integer> list = map.get(val);
                 for (int j = 0; j < list.size(); j++) {
                     int idx = list.get(j);
                     List<Double> line = new ArrayList<Double>();
-                    line.addAll(this.rawData.get(idx));
-                    line.addAll(data2.rawData.get(idx));
+
+                    // Add the duplicated value as the first element
+                    line.add(val);
+
+                    // Then add the remaining value from the first dataset
+                    addAllExcept(line, this.rawData.get(idx), col1);
+
+                    // Finally add the remaining value from the second dataset
+                    addAllExcept(line, data2.rawData.get(i), col2);
+
                     joinedData.add(line);
                 }
             }
@@ -202,6 +212,14 @@ public class CSVData {
         for (int ind = 1; ind < data.length; ind++) {
             int r = random.nextInt(ind + 1);
             swap(data, ind, r);
+        }
+    }
+
+    private static void addAllExcept(List<Double> dst, List<Double> src, int col) {
+        for (int k = 0; k < src.size(); k++) {
+            if (k != col) {
+                dst.add(src.get(k));
+            }
         }
     }
 }
